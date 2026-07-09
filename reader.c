@@ -1,6 +1,7 @@
 #include "reader.h"
 #include "util.h"
 #include <stdlib.h>
+#include <string.h>
 
 Reader* createReader(const char *pathToFile, const size_t readSize) {
     FILE* file = fopen(pathToFile, "rb"); // rb более точный, r преобразовывает \r\n -> \n
@@ -10,8 +11,8 @@ Reader* createReader(const char *pathToFile, const size_t readSize) {
     checkAllocateMem(reader);
 
     reader->file = file;
-    reader->size = readSize > 0 ? readSize : 1;
-    reader->buffer = calloc(1, reader->size); // чтобы обнулить буфер
+    reader->readSize = readSize > 0 ? readSize : 1;
+    reader->buffer = calloc(1, reader->readSize); // чтобы обнулить буфер
     checkAllocateMem(reader->buffer);
 
     return reader;
@@ -21,7 +22,8 @@ Reader* createReader(const char *pathToFile, const size_t readSize) {
 size_t readNext(const Reader *reader) {
     if (reader == nullptr) return 0;
 
-    return fread(reader->buffer, 1, reader->size, reader->file);
+    memset(reader->buffer, 0, reader->readSize);
+    return fread(reader->buffer, 1, reader->readSize, reader->file);
 }
 
 void destroyReader(Reader *reader) {

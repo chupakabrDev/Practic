@@ -11,4 +11,6 @@ add_executable(Practic main.c
         finder.h
         finder.c
         test.c
-        test.h)
+        test.h
+        writer.h
+        writer.c)

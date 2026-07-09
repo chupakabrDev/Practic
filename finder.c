@@ -47,6 +47,7 @@ Finder * createFinder(const char *target, const size_t size) {
     finder->currentIndex = 0;
     finder->currentMatches = nullptr;
     finder->currentMatchCount = 0;
+    finder->fetchIndex = 0;
 
     finder->prefix = calloc(size, sizeof(size));
     checkAllocateMem(finder->prefix);
@@ -98,19 +99,16 @@ bool find(Finder* finder, const char* data, const size_t dataSize) {
 }
 
 Match* get(Finder *finder) {
-    if (finder == nullptr || finder->currentMatchCount == 0)
+    if (finder == nullptr || finder->fetchIndex >= finder->currentMatchCount)
         return nullptr;
 
-    const size_t last = finder->currentMatchCount - 1;
-    Match* orig = finder->currentMatches[last];
-
+    Match* orig = finder->currentMatches[finder->fetchIndex];
     Match* copy = malloc(sizeof(Match));
     checkAllocateMem(copy);
     *copy = *orig;
 
     free(orig);
-    finder->currentMatches[last] = nullptr;
-    finder->currentMatchCount = last;
+    finder->currentMatches[finder->fetchIndex++] = nullptr;
 
     return copy; // вызывающий должен вызвать free(copy)
 }

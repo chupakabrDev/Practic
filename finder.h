@@ -18,6 +18,7 @@ typedef struct Finder {
     Match** currentMatches; // совпадения, которые были завершены в текущей порции данных
     size_t currentMatchCount;
     size_t* prefix; // максимальный размер это размер target
+    size_t fetchIndex;
 } Finder;
 
 Finder* createFinder(const char* target, size_t size);

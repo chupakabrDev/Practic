@@ -4,7 +4,7 @@
 
 typedef struct Reader {
     FILE* file;
-    size_t size;
+    size_t readSize;
     char *buffer;
 } Reader;
 

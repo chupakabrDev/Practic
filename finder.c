@@ -66,6 +66,7 @@ bool find(Finder* finder, const char* data, const size_t dataSize) {
     size_t matched = finder->matched;
 
     const size_t oldCount = finder->currentMatchCount;
+    size_t insertIndex = oldCount;
 
     for (size_t i = 0; i < dataSize; i++) {
         const char c = data[i];
@@ -84,7 +85,7 @@ bool find(Finder* finder, const char* data, const size_t dataSize) {
             Match** newMatches = realloc(finder->currentMatches, finder->currentMatchCount * sizeof(Match*));
             checkAllocateMem(newMatches);
             finder->currentMatches = newMatches;
-            finder->currentMatches[oldCount] = match;
+            finder->currentMatches[insertIndex++] = match;
 
             matched = 0;
         }

@@ -1,0 +1,31 @@
+#pragma once
+#include <stddef.h>
+
+typedef struct SearchTarget {
+    char* target;
+    size_t size;
+} SearchTarget;
+
+typedef struct Match {
+    size_t start;
+    size_t end;
+} Match;
+
+typedef struct Finder {
+    SearchTarget* target;
+    size_t matched;
+    size_t currentIndex;
+    Match** currentMatches; // совпадения, которые были завершены в текущей порции данных
+    size_t currentMatchCount;
+    size_t* prefix; // максимальный размер это размер target
+} Finder;
+
+Finder* createFinder(const char* target, size_t size);
+
+// вернет true если в этой порции данных было закончено хотя бы одно совпадение
+bool find(Finder* finder, const char* data, size_t dataSize); // продолжает поиск для новой порции данных
+
+// вернет null если совпадений нет
+Match* get(Finder* finder); // получает элемент из списка завершенных совпадений
+
+void destroyFinder(Finder* finder);

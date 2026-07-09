@@ -1,3 +1,10 @@
+/*
+Реализация reader.h
+
+Кинев Алексей Александрович
+МК-102
+*/
+
 #include "reader.h"
 #include "util.h"
 #include <stdlib.h>

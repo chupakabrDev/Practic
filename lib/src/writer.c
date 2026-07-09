@@ -1,3 +1,10 @@
+/*
+Реализация writer.h
+
+Кинев Алексей Александрович
+МК-102
+*/
+
 #include "writer.h"
 
 #include <stdlib.h>

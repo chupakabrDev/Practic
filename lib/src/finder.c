@@ -1,3 +1,10 @@
+/*
+Реализация finder.h
+
+Кинев Алексей Александрович
+МК-102
+*/
+
 #include "finder.h"
 
 #include <stdlib.h>

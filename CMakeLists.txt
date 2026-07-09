@@ -9,4 +9,6 @@ add_executable(Practic main.c
         util.h
         util.c
         finder.h
-        finder.c)
+        finder.c
+        test.c
+        test.h)

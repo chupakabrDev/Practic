@@ -4,22 +4,24 @@
 
 #include "finder.h"
 #include "reader.h"
+#include "writer.h"
 
 #define N 16
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     if (argc != 4) {
         fprintf(stderr, "Должно быть 3 аргумента\n");
         return 1;
     }
 
-    char* filename = argv[1];
-    char* original = argv[2];
-    char* replacement = argv[3];
+    const char* filename = argv[1];
+    const char* original = argv[2];
+    const char* replacement = argv[3];
 
-ptrdiff_t offset = (ptrdiff_t)strlen(original) - (ptrdiff_t)strlen(replacement);    printf("%td\n", offset);
+    const size_t replacementLen = strlen(replacement);
 
     Reader* reader = createReader(filename, N);
+    Writer* writer = createWriter("output.txt");
     Finder* finder = createFinder(original, strlen(original)); // нулевой бат не берется потому что длина его не учитывает
 
     size_t count = readNext(reader);
@@ -29,22 +31,28 @@ ptrdiff_t offset = (ptrdiff_t)strlen(original) - (ptrdiff_t)strlen(replacement);
         goto destroy;
     }
 
+    size_t last = 0;
     while (count != 0) {
+        find(finder, reader->buffer, count);
 
-        if (find(finder, reader->buffer, count)) {
-            Match* match = get(finder);
-            while (match != nullptr) {
-                printf("start: %lu; end: %lu\n", match->start, match->end);
-                match = get(finder);
-            }
+        Match* match = getMatch(finder);
+        while (match != nullptr) {
+            writeNext(writer, reader->buffer + last, match->start - last); // до совпадения
+            writeNext(writer, replacement, replacementLen); // совпадение
+            last = match->end + 1;
+
             free(match);
+            match = getMatch(finder);
         }
+        writeNext(writer, reader->buffer + last, count - last);
 
         count = readNext(reader);
+        freeMatches(finder);
     }
 
     destroy: {
         destroyReader(reader);
+        destroyWriter(writer);
         destroyFinder(finder);
     }
 

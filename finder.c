@@ -28,7 +28,7 @@ static void computePrefixFunction(const char* pattern, const size_t len, size_t*
 
 }
 
-Finder * createFinder(const char *target, const size_t size) {
+Finder* createFinder(const char *target, const size_t size) {
     if (target == nullptr || size == 0)
         return nullptr;
 
@@ -56,7 +56,7 @@ Finder * createFinder(const char *target, const size_t size) {
     return finder;
 }
 
-bool find(Finder* finder, const char* data, const size_t dataSize) {
+bool find(Finder *finder, const char *data, const size_t dataSize) {
     if (finder == nullptr || data == nullptr || dataSize == 0 || finder->target->size == 0)
         return false;
 
@@ -98,8 +98,8 @@ bool find(Finder* finder, const char* data, const size_t dataSize) {
     return finder->currentMatchCount > oldCount;
 }
 
-Match* get(Finder *finder) {
-    if (finder == nullptr || finder->fetchIndex >= finder->currentMatchCount)
+Match* getMatch(Finder *finder) {
+    if (finder == nullptr || finder->fetchIndex >= finder->currentMatchCount || finder->currentMatches == nullptr)
         return nullptr;
 
     Match* orig = finder->currentMatches[finder->fetchIndex];
@@ -113,11 +113,8 @@ Match* get(Finder *finder) {
     return copy; // вызывающий должен вызвать free(copy)
 }
 
-void destroyFinder(Finder *finder) {
-    if (finder == nullptr) return;
-
-    free(finder->prefix);
-    finder->prefix = nullptr;
+void freeMatches(Finder* finder) {
+    if (finder == nullptr || finder->currentMatches == nullptr) return;
 
     for (size_t i = 0; i < finder->currentMatchCount; i++) {
         free(finder->currentMatches[i]);
@@ -125,6 +122,15 @@ void destroyFinder(Finder *finder) {
 
     free(finder->currentMatches);
     finder->currentMatches = nullptr;
+}
+
+void destroyFinder(Finder *finder) {
+    if (finder == nullptr) return;
+
+    free(finder->prefix);
+    finder->prefix = nullptr;
+
+    freeMatches(finder);
 
     free(finder->target->target);
     finder->target->target = nullptr;

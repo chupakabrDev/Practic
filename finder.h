@@ -15,9 +15,9 @@ typedef struct Finder {
     SearchTarget* target;
     size_t matched;
     size_t currentIndex;
-    Match** currentMatches; // совпадения, которые были завершены в текущей порции данных
+    Match** currentMatches;
     size_t currentMatchCount;
-    size_t* prefix; // максимальный размер это размер target
+    size_t* prefix;
     size_t fetchIndex;
 } Finder;
 
@@ -27,6 +27,8 @@ Finder* createFinder(const char* target, size_t size);
 bool find(Finder* finder, const char* data, size_t dataSize); // продолжает поиск для новой порции данных
 
 // вернет null если совпадений нет
-Match* get(Finder* finder); // получает элемент из списка завершенных совпадений
+Match* getMatch(Finder* finder); // достает первое совпадение и удалет его из списка взварщаю копию
+
+void freeMatches(Finder* finder);
 
 void destroyFinder(Finder* finder);

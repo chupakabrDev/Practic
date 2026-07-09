@@ -44,37 +44,37 @@ void testFinder() {
     Finder* finder = createFinder(target, 3);
 
     if (find(finder, inputa, 2)) {
-        Match* match = get(finder);
+        Match* match = getMatch(finder);
         while (match != nullptr) {
             printf("start: %lu; end: %lu\n", match->start, match->end);
-            match = get(finder);
+            match = getMatch(finder);
         }
         free(match);
     }
 
     if (find(finder, inputb, 2)) {
-        Match* match = get(finder);
+        Match* match = getMatch(finder);
         while (match != nullptr) {
             printf("start: %lu; end: %lu\n", match->start, match->end);
-            match = get(finder);
+            match = getMatch(finder);
         }
         free(match);
     }
 
     if (find(finder, inputc, 2)) {
-        Match* match = get(finder);
+        Match* match = getMatch(finder);
         while (match != nullptr) {
             printf("start: %lu; end: %lu\n", match->start, match->end);
-            match = get(finder);
+            match = getMatch(finder);
         }
         free(match);
     }
 
     if (find(finder, inputd, 1)) {
-        Match* match = get(finder);
+        Match* match = getMatch(finder);
         while (match != nullptr) {
             printf("start: %lu; end: %lu\n", match->start, match->end);
-            match = get(finder);
+            match = getMatch(finder);
         }
         free(match);
     }

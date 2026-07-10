@@ -11,6 +11,8 @@
 #include <string.h>
 
 Reader* createReader(const char *pathToFile, const size_t readSize) {
+    if (pathToFile == nullptr) return nullptr;
+
     FILE* file = fopen(pathToFile, "rb"); // rb более точный, r преобразовывает \r\n -> \n
     checkOpenFile(file);
 

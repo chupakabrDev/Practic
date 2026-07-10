@@ -13,7 +13,7 @@ typedef struct Writer {
     FILE* file;
 } Writer;
 
-Writer* createWriter(const char* filename);
+Writer* createWriter(const char* pathToFile);
 
 size_t writeNext(const Writer* writer, const char* data, size_t size); // вернет кол-во записанных байт
 

@@ -11,13 +11,13 @@
 
 #include "util.h"
 
-Writer* createWriter(const char* filename) {
-    if (filename == nullptr) return nullptr;
+Writer* createWriter(const char* pathToFile) {
+    if (pathToFile == nullptr) return nullptr;
 
     Writer* writer = malloc(sizeof(Writer));
     checkAllocateMem(writer);
 
-    FILE* file = fopen(filename, "wb");
+    FILE* file = fopen(pathToFile, "wb");
     checkOpenFile(file);
 
     writer->file = file;

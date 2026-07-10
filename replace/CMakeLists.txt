@@ -11,3 +11,4 @@ set(SOURCES
 add_executable(replace ${SOURCES})
 
 target_link_libraries(replace PRIVATE lib)
+

@@ -9,9 +9,6 @@ set(SOURCES
         src/reader.c
         src/writer.c
         src/util.c
-        tests/test_finder/test_finder.c
-        tests/test_reader/test_reader.c
-        tests/test_writer/test_writer.c
 )
 
 add_library(lib STATIC ${SOURCES})

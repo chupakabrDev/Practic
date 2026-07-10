@@ -18,7 +18,7 @@ Writer* createWriter(const char* pathToFile) {
     checkAllocateMem(writer);
 
     FILE* file = fopen(pathToFile, "wb");
-    checkOpenFile(file);
+    if (file == nullptr) return nullptr;
 
     writer->file = file;
 

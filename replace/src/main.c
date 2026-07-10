@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <util.h>
 
 #include "finder.h"
 #include "reader.h"
@@ -31,6 +32,8 @@ int main(const int argc, char *argv[]) {
     Reader* reader = createReader(filename, N);
     Writer* writer = createWriter("output.txt");
     Finder* finder = createFinder(original, strlen(original)); // нулевой бат не берется потому что длина его не учитывает
+    checkOpenFile(reader);
+    checkOpenFile(writer);
 
     size_t count = readNext(reader);
     if (count == 0) {

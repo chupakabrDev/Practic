@@ -40,12 +40,12 @@ Finder* createFinder(const char *target, const size_t size) {
         return nullptr;
 
     Finder *finder = malloc(sizeof(Finder));
-    checkAllocateMem(finder);
+    if (finder == nullptr) return nullptr;
 
     SearchTarget *search = malloc(sizeof(SearchTarget));
-    checkAllocateMem(search);
+    if (search == nullptr) goto cleanupFinder;
     search->target = strdup(target);
-    checkAllocateMem(search->target);
+    if (search->target == nullptr) goto cleanupSearch;
     search->size = size;
 
     finder->target = search;
@@ -57,15 +57,22 @@ Finder* createFinder(const char *target, const size_t size) {
     finder->fetchIndex = 0;
 
     finder->prefix = calloc(size, sizeof(size));
-    checkAllocateMem(finder->prefix);
+    if (finder->prefix == nullptr) goto cleanupTarget;
     computePrefixFunction(search->target, size, finder->prefix);
 
     return finder;
+
+    cleanupTarget: free(search->target);
+    cleanupSearch: free(search);
+    cleanupFinder: free(finder);
+
+    return nullptr;
+
 }
 
-bool find(Finder *finder, const char *data, const size_t dataSize) {
+FindResult find(Finder *finder, const char *data, const size_t dataSize) {
     if (finder == nullptr || data == nullptr || dataSize == 0 || finder->target->size == 0)
-        return false;
+        return FIND_ERROR;
 
     const size_t pattern_len = finder->target->size;
     const char* pattern = finder->target->target;
@@ -85,13 +92,16 @@ bool find(Finder *finder, const char *data, const size_t dataSize) {
             const size_t end = start + pattern_len - 1;
 
             Match* match = malloc(sizeof(Match));
-            checkAllocateMem(match);
+            if (match == nullptr) return FIND_ERROR;
             match->start = start;
             match->end = end;
 
             finder->currentMatchCount++;
             Match** newMatches = realloc(finder->currentMatches, finder->currentMatchCount * sizeof(Match*));
-            checkAllocateMem(newMatches);
+            if (newMatches == nullptr) {
+                free(match);
+                return FIND_ERROR;
+            }
             finder->currentMatches = newMatches;
             finder->currentMatches[insertIndex++] = match;
 
@@ -102,7 +112,7 @@ bool find(Finder *finder, const char *data, const size_t dataSize) {
     finder->matched = matched;
     finder->currentIndex += dataSize;
 
-    return finder->currentMatchCount > oldCount;
+    return finder->currentMatchCount > oldCount ? FIND_SUCCESS : FIND_FAILURE;
 }
 
 Match* getMatch(Finder *finder) {
@@ -111,7 +121,8 @@ Match* getMatch(Finder *finder) {
 
     Match* orig = finder->currentMatches[finder->fetchIndex];
     Match* copy = malloc(sizeof(Match));
-    checkAllocateMem(copy);
+    if (copy == nullptr)
+        return nullptr;
     *copy = *orig;
 
     free(orig);

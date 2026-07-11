@@ -17,12 +17,15 @@ Reader* createReader(const char *pathToFile, const size_t readSize) {
     if (file == nullptr) return nullptr;
 
     Reader *reader = malloc(sizeof(Reader));
-    checkAllocateMem(reader);
+    if (reader == nullptr) return nullptr;
 
     reader->file = file;
     reader->readSize = readSize > 0 ? readSize : 1;
     reader->buffer = calloc(1, reader->readSize); // чтобы обнулить буфер
-    checkAllocateMem(reader->buffer);
+    if (reader->buffer == nullptr) {
+        free(reader);
+        return nullptr;
+    }
 
     return reader;
 }

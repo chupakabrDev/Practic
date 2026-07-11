@@ -15,10 +15,13 @@ Writer* createWriter(const char* pathToFile) {
     if (pathToFile == nullptr) return nullptr;
 
     Writer* writer = malloc(sizeof(Writer));
-    checkAllocateMem(writer);
+    if (writer == nullptr) return nullptr;
 
     FILE* file = fopen(pathToFile, "wb");
-    if (file == nullptr) return nullptr;
+    if (file == nullptr) {
+        free(writer);
+        return nullptr;
+    }
 
     writer->file = file;
 

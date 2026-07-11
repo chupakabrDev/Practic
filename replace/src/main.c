@@ -23,6 +23,8 @@ int main(const int argc, char *argv[]) {
         return 1;
     }
 
+    int res = 0;
+
     const char* filename = argv[1];
     const char* original = argv[2];
     const char* replacement = argv[3];
@@ -30,42 +32,73 @@ int main(const int argc, char *argv[]) {
     const size_t replacementLen = strlen(replacement);
 
     Reader* reader = createReader(filename, N);
+    if (reader == nullptr) {
+        perror("Ошибка создания Reader");
+        return 1;
+    }
     Writer* writer = createWriter("output.txt");
-    Finder* finder = createFinder(original, strlen(original)); // нулевой бат не берется потому что длина его не учитывает
-    checkOpenFile(reader);
-    checkOpenFile(writer);
+    if (writer == nullptr) {
+        perror("Ошибка создания Writer");
+        res = 1;
+        goto cleanupReader;
+    }
+    Finder* finder = createFinder(original, strlen(original)); // завершающий ноль режется длиной
+    if (finder == nullptr) {
+        perror("Ошибка создания Finder");
+        res = 1;
+        goto cleanupWriter;
+    }
 
     size_t count = readNext(reader);
-    if (count == 0) {
-        puts("Пустой файл");
-        destroyReader(reader);
-        goto destroy;
+    if (count < N) {
+        if (ferror(reader->file)) {
+            perror("Ошибка чтения");
+            res = 1;
+            goto cleanup;
+        }
+        if (!feof(reader->file)) {
+            perror("Пустой файл");
+            res = 1;
+            goto cleanup;
+        }
     }
 
     size_t last = 0;
     while (count != 0) {
-        find(finder, reader->buffer, count);
-
-        Match* match = getMatch(finder);
-        while (match != nullptr) {
-            writeNext(writer, reader->buffer + last, match->start - last); // до совпадения
-            writeNext(writer, replacement, replacementLen); // совпадение
-            last = match->end + 1;
-
-            free(match);
-            match = getMatch(finder);
+        if (find(finder, reader->buffer, count) == FIND_ERROR) {
+            perror("Ошибка поиска");
+            res = 1;
+            goto cleanup;
         }
+        last = 0;
+
+        Match* match;
+        while ((match = getMatch(finder)) != nullptr) {
+            // запись на граница через реплейс предыдущих байт
+            // сократить main
+
+            writeNext(writer, reader->buffer + last, match->start - last);
+            writeNext(writer, replacement, replacementLen);
+            last = match->end + 1;
+            free(match);
+        }
+        if (finder->currentMatchCount > 0) {
+            perror("Ошибка извлечения совпадения");
+            res = 1;
+            goto cleanup;
+        }
+
         writeNext(writer, reader->buffer + last, count - last);
 
         count = readNext(reader);
         freeMatches(finder);
     }
 
-    destroy: {
-        destroyReader(reader);
-        destroyWriter(writer);
+    cleanup: {
         destroyFinder(finder);
+        cleanupWriter: destroyWriter(writer);
+        cleanupReader: destroyReader(reader);
     }
 
-    return 0;
+    return res;
 }

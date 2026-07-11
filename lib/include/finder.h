@@ -9,6 +9,12 @@
 #pragma once
 #include <stddef.h>
 
+typedef enum FindResult {
+    FIND_SUCCESS,
+    FIND_FAILURE,
+    FIND_ERROR
+} FindResult;
+
 typedef struct SearchTarget {
     char* target;
     size_t size;
@@ -31,8 +37,7 @@ typedef struct Finder {
 
 Finder* createFinder(const char* target, size_t size);
 
-// вернет true если в этой порции данных было закончено хотя бы одно совпадение
-bool find(Finder* finder, const char* data, size_t dataSize); // продолжает поиск для новой порции данных
+FindResult find(Finder* finder, const char* data, size_t dataSize); // продолжает поиск для новой порции данных
 
 // вернет null если совпадений нет
 Match* getMatch(Finder* finder); // достает первое совпадение и удалет его из списка взварщаю копию

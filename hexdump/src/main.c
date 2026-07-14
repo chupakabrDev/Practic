@@ -1,3 +1,9 @@
+/*
+Главный файл подпроекта hexdump, точка входа
+
+Кинев Алексей Александрович
+МК-102
+*/
 #include <stdio.h>
 #include <getopt.h>
 #include <stdlib.h>

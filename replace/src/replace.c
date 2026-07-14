@@ -1,3 +1,9 @@
+/*
+Реализация replace.c
+
+Кинев Алексей Александрович
+МК-102
+*/
 #include "replace.h"
 
 #include <stddef.h>

@@ -1,3 +1,9 @@
+/*
+Главный файл подпроекта replace, точка входа
+
+Кинев Алексей Александрович
+МК-102
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include "replace.h"

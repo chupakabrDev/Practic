@@ -8,6 +8,12 @@
 
 #include "util.h"
 
+#ifdef _WIN32
+  #define FSEEK _fseeki64
+#else
+  #define FSEEK fseeko
+#endif
+
 static constexpr char HELP[] = R"(
     -i file_name	имя выводимого файла
     -o offset		смещение от начала файла, с которого выводится содержимое (если не задано, то выводить с начала файла)
@@ -17,6 +23,14 @@ static constexpr char HELP[] = R"(
     -d dir			директория, из которой выводить файлы
 )";
 
+int myFSeek(FILE *f, size_t pos) {
+#ifdef _WIN32
+    return _fseeki64(f, (__int64)pos, SEEK_SET);
+#else
+    return fseeko(f, (off_t)pos, SEEK_SET);
+#endif
+}
+
 typedef struct Args {
     char* file;
     char* dir;
@@ -25,8 +39,6 @@ typedef struct Args {
     size_t chunkSize;
     size_t chunkCount;
 } Args;
-
-
 
 Args* readArgs(const int argc, char **argv) {
     int opt;
@@ -114,17 +126,17 @@ Args* readArgs(const int argc, char **argv) {
     return args;
 }
 
-static void printChunkHex(const unsigned char *data, size_t size) {
+static void printChunkHex(const unsigned char *data, const size_t size) {
     char hex[3] = {0};
-    for (size_t i = 0; i < size; ++i) {
+    for (size_t i = 0; i < size; i++) {
         byteToHex(data[i], hex);
         fwrite(hex, 1, 2, stdout);
     }
 }
 
-static void printChars(const unsigned char *data, size_t size) {
-    for (size_t i = 0; i < size; ++i) {
-        unsigned char c = data[i];
+static void printChars(const unsigned char *data, const size_t size) {
+    for (size_t i = 0; i < size; i++) {
+        const unsigned char c = data[i];
         if (c >= 0x20 && c <= 0x7E) {
             putchar(c);
         } else {
@@ -146,20 +158,20 @@ static void processFile(const char *filename, size_t offset, size_t limit,
         fclose(f);
         return;
     }
-    long fileSizeLong = ftell(f);
+    const long fileSizeLong = ftell(f);
     if (fileSizeLong < 0) {
         fprintf(stderr, "Ошибка ftell: %s\n", strerror(errno));
         fclose(f);
         return;
     }
-    size_t fileSize = (size_t)fileSizeLong;
+    const size_t fileSize = (size_t)fileSizeLong;
 
     if (offset >= fileSize) {
         fclose(f);
         return;
     }
 
-    if (fseek(f, offset, SEEK_SET) != 0) {
+    if (myFSeek(f, offset) != 0) {
         fprintf(stderr, "Ошибка fseek к смещению %zu: %s\n", offset, strerror(errno));
         fclose(f);
         return;
@@ -170,7 +182,7 @@ static void processFile(const char *filename, size_t offset, size_t limit,
         bytesToRead = limit;
     }
 
-    size_t lineBufSize = chunkCount * chunkSize;
+    const size_t lineBufSize = chunkCount * chunkSize;
     unsigned char *lineBuf = malloc(lineBufSize);
     if (!lineBuf) {
         fprintf(stderr, "Ошибка выделения памяти\n");
@@ -181,16 +193,15 @@ static void processFile(const char *filename, size_t offset, size_t limit,
     size_t bytesReadTotal = 0;
     size_t currentOffset = offset;   // смещение для текущей строки
 
-    // Читаем по кусочкам
     while (bytesReadTotal < bytesToRead) {
-        // Набираем байты для строки
+        // набираем байты для строки
         size_t bytesInLine = 0;
-        size_t bytesAvailable = bytesToRead - bytesReadTotal;
+        const size_t bytesAvailable = bytesToRead - bytesReadTotal;
 
-        // Читаем максимум lineBufSize байт, но не более available
+        // читаем максимум lineBufSize байт, но не более available
         size_t toRead = (bytesAvailable < lineBufSize) ? bytesAvailable : lineBufSize;
         size_t read = fread(lineBuf, 1, toRead, f);
-        if (read == 0) break; // конец или ошибка
+        if (read == 0) break;
 
         bytesReadTotal += read;
         bytesInLine = read;
@@ -202,7 +213,7 @@ static void processFile(const char *filename, size_t offset, size_t limit,
         // Выводим кусочки
         size_t pos = 0;
         while (pos < bytesInLine) {
-            size_t chunkBytes = (bytesInLine - pos) < chunkSize ? (bytesInLine - pos) : chunkSize;
+            const size_t chunkBytes = (bytesInLine - pos) < chunkSize ? (bytesInLine - pos) : chunkSize;
             printChunkHex(lineBuf + pos, chunkBytes);
             pos += chunkBytes;
 

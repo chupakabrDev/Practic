@@ -10,6 +10,40 @@
 #include <errno.h>
 #include <inttypes.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
+unsigned char hexToNibble(const char c) {
+    if (c >= '0' && c <= '9') return (unsigned char)(c - '0');
+    if (c >= 'A' && c <= 'F') return (unsigned char)(c - 'A' + 10);
+    if (c >= 'a' && c <= 'f') return (unsigned char)(c - 'a' + 10);
+
+    return 0xFF;
+}
+
+unsigned char* hexToBytes(const char* hex, size_t* outLen) {
+    if (hex == nullptr) return nullptr;
+
+    size_t hexLen = strlen(hex);
+    if (hexLen % 2 != 0 || hexLen == 0) return nullptr;
+
+    *outLen = hexLen /= 2;
+    unsigned char* bytes = malloc(hexLen);
+    if (bytes == nullptr) return nullptr;
+
+    for (size_t i = 0; i < hexLen; i++) {
+        const unsigned char high = hexToNibble(hex[2 * i]);
+        const unsigned char low  = hexToNibble(hex[2 * i + 1]);
+        if (high == 0xFF || low == 0xFF) {
+            free(bytes);
+            return nullptr;
+        }
+
+        bytes[i] = high << 4 | low;
+    }
+
+    return bytes;
+}
 
 void byteToHex(const unsigned char b, char *out) {
     static constexpr char hex[] = "0123456789ABCDEF";

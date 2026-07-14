@@ -9,6 +9,10 @@
 #pragma once
 #include <stddef.h>
 
+unsigned char hexToNibble(char c);
+
+unsigned char* hexToBytes(const char* hex, size_t* outLen);
+
 void byteToHex(unsigned char b, char *out);
 
 size_t strToSizeT(const char *str, char **endptr);

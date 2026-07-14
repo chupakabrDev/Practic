@@ -12,7 +12,7 @@ void tearDown(void) {}
 // --------------------------------------------------------------
 // Вспомогательный макрос для проверки совпадений
 // --------------------------------------------------------------
-// Обратите внимание: в структуре Match поле end хранит последний индекс ВКЛЮЧИТЕЛЬНО,
+// В структуре Match поле end хранит последний индекс ВКЛЮЧИТЕЛЬНО,
 // поэтому длина вычисляется как (end - start + 1).
 #define ASSERT_MATCH(m, expected_start, expected_len) \
     do { \
@@ -25,7 +25,7 @@ void tearDown(void) {}
 // 1. Создание и уничтожение Finder
 // --------------------------------------------------------------
 void test_create_destroy(void) {
-    Finder* f = createFinder("abc", 3);
+    Finder* f = createFinder((const unsigned char*)"abc", 3);
     TEST_ASSERT_NOT_NULL(f);
     destroyFinder(f);
 }
@@ -34,9 +34,9 @@ void test_create_destroy(void) {
 // 2. Одиночное вхождение
 // --------------------------------------------------------------
 void test_find_single_match(void) {
-    Finder* f = createFinder("abc", 3);
-    bool found = find(f, "abc", 3);
-    TEST_ASSERT_TRUE(found);
+    Finder* f = createFinder((const unsigned char*)"abc", 3);
+    FindResult res = find(f, (const unsigned char*)"abc", 3);
+    TEST_ASSERT_EQUAL(FIND_SUCCESS, res);
 
     Match* m = getMatch(f);
     ASSERT_MATCH(m, 0, 3);
@@ -50,8 +50,9 @@ void test_find_single_match(void) {
 // 3. Множественные неперекрывающиеся вхождения (одним вызовом find)
 // --------------------------------------------------------------
 void test_find_multiple_matches(void) {
-    Finder* f = createFinder("ab", 2);
-    find(f, "ababab", 6);
+    Finder* f = createFinder((const unsigned char*)"ab", 2);
+    FindResult res = find(f, (const unsigned char*)"ababab", 6);
+    TEST_ASSERT_EQUAL(FIND_SUCCESS, res);
 
     Match* m1 = getMatch(f);
     ASSERT_MATCH(m1, 0, 2);
@@ -74,8 +75,9 @@ void test_find_multiple_matches(void) {
 // --------------------------------------------------------------
 void test_overlap_handling(void) {
     // "aaa" + паттерн "aa" → должно быть только 1 вхождение (не 2)
-    Finder* f1 = createFinder("aa", 2);
-    find(f1, "aaa", 3);
+    Finder* f1 = createFinder((const unsigned char*)"aa", 2);
+    FindResult res1 = find(f1, (const unsigned char*)"aaa", 3);
+    TEST_ASSERT_EQUAL(FIND_SUCCESS, res1);
     Match* m1 = getMatch(f1);
     ASSERT_MATCH(m1, 0, 2);
     free(m1);
@@ -83,8 +85,9 @@ void test_overlap_handling(void) {
     destroyFinder(f1);
 
     // "aaaaa" + паттерн "aa" → 2 вхождения (0-1 и 2-3, символ 4 остаётся)
-    Finder* f2 = createFinder("aa", 2);
-    find(f2, "aaaaa", 5);
+    Finder* f2 = createFinder((const unsigned char*)"aa", 2);
+    FindResult res2 = find(f2, (const unsigned char*)"aaaaa", 5);
+    TEST_ASSERT_EQUAL(FIND_SUCCESS, res2);
     Match* m2a = getMatch(f2);
     ASSERT_MATCH(m2a, 0, 2);
     free(m2a);
@@ -95,8 +98,9 @@ void test_overlap_handling(void) {
     destroyFinder(f2);
 
     // "ababa" + паттерн "aba" → только 1 (0-2), т.к. второе перекрывается
-    Finder* f3 = createFinder("aba", 3);
-    find(f3, "ababa", 5);
+    Finder* f3 = createFinder((const unsigned char*)"aba", 3);
+    FindResult res3 = find(f3, (const unsigned char*)"ababa", 5);
+    TEST_ASSERT_EQUAL(FIND_SUCCESS, res3);
     Match* m3 = getMatch(f3);
     ASSERT_MATCH(m3, 0, 3);
     free(m3);
@@ -108,13 +112,13 @@ void test_overlap_handling(void) {
 // 5. Потоковый режим (порционная подача)
 // --------------------------------------------------------------
 void test_streaming_single_match(void) {
-    Finder* f = createFinder("abc", 3);
+    Finder* f = createFinder((const unsigned char*)"abc", 3);
 
-    bool found1 = find(f, "ab", 2);
-    TEST_ASSERT_FALSE(found1);
+    FindResult res1 = find(f, (const unsigned char*)"ab", 2);
+    TEST_ASSERT_EQUAL(FIND_FAILURE, res1);
 
-    bool found2 = find(f, "c", 1);
-    TEST_ASSERT_TRUE(found2);
+    FindResult res2 = find(f, (const unsigned char*)"c", 1);
+    TEST_ASSERT_EQUAL(FIND_SUCCESS, res2);
 
     Match* m = getMatch(f);
     ASSERT_MATCH(m, 0, 3);
@@ -124,14 +128,14 @@ void test_streaming_single_match(void) {
 }
 
 void test_streaming_multiple_matches(void) {
-    Finder* f = createFinder("ab", 2);
+    Finder* f = createFinder((const unsigned char*)"ab", 2);
 
-    bool found1 = find(f, "a", 1); TEST_ASSERT_FALSE(found1);
-    bool found2 = find(f, "b", 1); TEST_ASSERT_TRUE(found2);
-    bool found3 = find(f, "a", 1); TEST_ASSERT_FALSE(found3);
-    bool found4 = find(f, "b", 1); TEST_ASSERT_TRUE(found4);
-    bool found5 = find(f, "a", 1); TEST_ASSERT_FALSE(found5);
-    bool found6 = find(f, "b", 1); TEST_ASSERT_TRUE(found6);
+    FindResult r1 = find(f, (const unsigned char*)"a", 1); TEST_ASSERT_EQUAL(FIND_FAILURE, r1);
+    FindResult r2 = find(f, (const unsigned char*)"b", 1); TEST_ASSERT_EQUAL(FIND_SUCCESS, r2);
+    FindResult r3 = find(f, (const unsigned char*)"a", 1); TEST_ASSERT_EQUAL(FIND_FAILURE, r3);
+    FindResult r4 = find(f, (const unsigned char*)"b", 1); TEST_ASSERT_EQUAL(FIND_SUCCESS, r4);
+    FindResult r5 = find(f, (const unsigned char*)"a", 1); TEST_ASSERT_EQUAL(FIND_FAILURE, r5);
+    FindResult r6 = find(f, (const unsigned char*)"b", 1); TEST_ASSERT_EQUAL(FIND_SUCCESS, r6);
 
     Match* m1 = getMatch(f); ASSERT_MATCH(m1, 0, 2); free(m1);
     Match* m2 = getMatch(f); ASSERT_MATCH(m2, 2, 2); free(m2);
@@ -145,8 +149,9 @@ void test_streaming_multiple_matches(void) {
 // 6. getMatch удаляет совпадение из списка
 // --------------------------------------------------------------
 void test_getMatch_removes(void) {
-    Finder* f = createFinder("a", 1);
-    find(f, "aaa", 3);
+    Finder* f = createFinder((const unsigned char*)"a", 1);
+    FindResult res = find(f, (const unsigned char*)"aaa", 3);
+    TEST_ASSERT_EQUAL(FIND_SUCCESS, res);
 
     Match* m1 = getMatch(f);
     TEST_ASSERT_NOT_NULL(m1);
@@ -168,9 +173,9 @@ void test_getMatch_removes(void) {
 // 7. Отсутствие совпадений
 // --------------------------------------------------------------
 void test_no_match(void) {
-    Finder* f = createFinder("abc", 3);
-    bool found = find(f, "def", 3);
-    TEST_ASSERT_FALSE(found);
+    Finder* f = createFinder((const unsigned char*)"abc", 3);
+    FindResult res = find(f, (const unsigned char*)"def", 3);
+    TEST_ASSERT_EQUAL(FIND_FAILURE, res);
     TEST_ASSERT_NULL(getMatch(f));
     destroyFinder(f);
 }
@@ -179,8 +184,9 @@ void test_no_match(void) {
 // 8. freeMatches очищает все накопленные совпадения
 // --------------------------------------------------------------
 void test_freeMatches_clears(void) {
-    Finder* f = createFinder("a", 1);
-    find(f, "aaa", 3);
+    Finder* f = createFinder((const unsigned char*)"a", 1);
+    FindResult res = find(f, (const unsigned char*)"aaa", 3);
+    TEST_ASSERT_EQUAL(FIND_SUCCESS, res);
     freeMatches(f);
     TEST_ASSERT_NULL(getMatch(f));
     destroyFinder(f);
@@ -190,15 +196,15 @@ void test_freeMatches_clears(void) {
 // 9. Длинный паттерн (стресс-тест)
 // --------------------------------------------------------------
 void test_long_pattern(void) {
-    char target[100] = {0};
+    unsigned char target[100] = {0};
     memset(target, 'a', 99);
     Finder* f = createFinder(target, 99);
 
-    char data[200];
+    unsigned char data[200];
     memset(data, 'a', 200);
 
-    bool found = find(f, data, 200);
-    TEST_ASSERT_TRUE(found);
+    FindResult res = find(f, data, 200);
+    TEST_ASSERT_EQUAL(FIND_SUCCESS, res);
 
     Match* m1 = getMatch(f);
     ASSERT_MATCH(m1, 0, 99);
@@ -216,9 +222,9 @@ void test_long_pattern(void) {
 // 10. Несколько совпадений за один вызов find
 // --------------------------------------------------------------
 void test_multiple_in_one_call(void) {
-    Finder* f = createFinder("ab", 2);
-    bool found = find(f, "abab", 4);
-    TEST_ASSERT_TRUE(found);
+    Finder* f = createFinder((const unsigned char*)"ab", 2);
+    FindResult res = find(f, (const unsigned char*)"abab", 4);
+    TEST_ASSERT_EQUAL(FIND_SUCCESS, res);
 
     Match* m1 = getMatch(f);
     ASSERT_MATCH(m1, 0, 2);

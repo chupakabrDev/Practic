@@ -4,7 +4,7 @@ project(Practic)
 option(BUILD_REPLACE "Build the replace executable" OFF)
 option(BUILD_HEXDUMP "Build the hexdump executable" OFF)
 
-if(BUILD_TESTS)
+if(BUILD_TESTING)
     include(CTest)
     enable_testing()
 

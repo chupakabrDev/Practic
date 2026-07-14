@@ -16,7 +16,7 @@ typedef enum FindResult {
 } FindResult;
 
 typedef struct SearchTarget {
-    char* target;
+    unsigned char* target;
     size_t size;
 } SearchTarget;
 
@@ -35,9 +35,9 @@ typedef struct Finder {
     size_t fetchIndex;
 } Finder;
 
-Finder* createFinder(const char* target, size_t size);
+Finder* createFinder(const unsigned char* target, size_t size);
 
-FindResult find(Finder* finder, const char* data, size_t dataSize); // продолжает поиск для новой порции данных
+FindResult find(Finder* finder, const unsigned char* data, size_t dataSize); // продолжает поиск для новой порции данных
 
 // вернет null если совпадений нет
 Match* getMatch(Finder* finder); // достает первое совпадение и удалет его из списка взварщаю копию

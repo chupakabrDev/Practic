@@ -12,7 +12,7 @@
 
 #include "util.h"
 
-static size_t kmpStep(const char* pattern, const size_t* pi, size_t matched, const char c) {
+static size_t kmpStep(const unsigned char* pattern, const size_t* pi, size_t matched, const unsigned char c) {
     while (matched > 0 && c != pattern[matched]) {
         matched = pi[matched - 1];
     }
@@ -24,7 +24,7 @@ static size_t kmpStep(const char* pattern, const size_t* pi, size_t matched, con
     return matched;
 }
 
-static void computePrefixFunction(const char* pattern, const size_t len, size_t* pi) {
+static void computePrefixFunction(const unsigned char* pattern, const size_t len, size_t* pi) {
     pi[0] = 0;
     size_t matched = 0;
 
@@ -35,7 +35,7 @@ static void computePrefixFunction(const char* pattern, const size_t len, size_t*
 
 }
 
-Finder* createFinder(const char *target, const size_t size) {
+Finder* createFinder(const unsigned char *target, const size_t size) {
     if (target == nullptr || size == 0)
         return nullptr;
 
@@ -44,7 +44,9 @@ Finder* createFinder(const char *target, const size_t size) {
 
     SearchTarget *search = malloc(sizeof(SearchTarget));
     if (search == nullptr) goto cleanupFinder;
-    search->target = strdup(target);
+    search->target = malloc(size);
+    if (!search->target) goto cleanupSearch;
+    memcpy(search->target, target, size);
     if (search->target == nullptr) goto cleanupSearch;
     search->size = size;
 
@@ -70,12 +72,12 @@ Finder* createFinder(const char *target, const size_t size) {
 
 }
 
-FindResult find(Finder *finder, const char *data, const size_t dataSize) {
+FindResult find(Finder *finder, const unsigned char *data, const size_t dataSize) {
     if (finder == nullptr || data == nullptr || dataSize == 0 || finder->target->size == 0)
         return FIND_ERROR;
 
     const size_t pattern_len = finder->target->size;
-    const char* pattern = finder->target->target;
+    const unsigned char* pattern = finder->target->target;
     const size_t* pi = finder->prefix;
 
     size_t matched = finder->matched;
@@ -84,7 +86,7 @@ FindResult find(Finder *finder, const char *data, const size_t dataSize) {
     size_t insertIndex = oldCount;
 
     for (size_t i = 0; i < dataSize; i++) {
-        const char c = data[i];
+        const unsigned char c = data[i];
         matched = kmpStep(pattern, pi, matched, c);
 
         if (matched == pattern_len) {

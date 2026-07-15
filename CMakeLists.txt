@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 4.1)
 project(Practic)
 
-option(BUILD_REPLACE "Build the replace executable" OFF)
-option(BUILD_HEXDUMP "Build the hexdump executable" OFF)
+set(BUILD_TARGET "none" CACHE STRING "Выбор подпроекта для сборки исполняемого файла")
+set_property(CACHE BUILD_TARGET PROPERTY STRINGS "none" "replace" "hexdump" "passgen")
 
 if(BUILD_TESTING)
     include(CTest)
@@ -19,11 +19,11 @@ endif()
 
 add_subdirectory(lib)
 
-if(BUILD_REPLACE)
+if(BUILD_TARGET STREQUAL "replace")
     add_subdirectory(replace)
-endif()
-
-if(BUILD_HEXDUMP)
+elseif(BUILD_TARGET STREQUAL "hexdump")
     add_subdirectory(hexdump)
+elseif(BUILD_TARGET STREQUAL "passgen")
+    add_subdirectory(passgen)
 endif()
 

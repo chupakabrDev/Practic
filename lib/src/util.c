@@ -62,3 +62,9 @@ size_t strToSizeT(const char *str, char **endptr) {
     }
     return val;
 }
+bool startsWith(const char *str, const char *prefix) {
+    if (!str || !prefix) return false;
+
+    return strncmp(str, prefix, strlen(prefix)) == 0;
+}
+

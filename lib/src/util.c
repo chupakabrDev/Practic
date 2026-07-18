@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <inttypes.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -68,3 +69,12 @@ bool startsWith(const char *str, const char *prefix) {
     return strncmp(str, prefix, strlen(prefix)) == 0;
 }
 
+void putError(const char *str, char **error) {
+    char *copy = strdup(str);
+    if (!copy) {
+        perror("Ошибка выделения памяти: putError");
+        exit(1);
+    }
+
+    *error = copy;
+}

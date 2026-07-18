@@ -18,3 +18,5 @@ void byteToHex(unsigned char b, char *out);
 size_t strToSizeT(const char *str, char **endptr);
 
 bool startsWith(const char *str, const char *prefix);
+
+void putError(const char *str, char **error);

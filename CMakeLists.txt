@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 4.1)
 project(Practic)
 
 set(BUILD_TARGET "none" CACHE STRING "Выбор подпроекта для сборки исполняемого файла")
-set_property(CACHE BUILD_TARGET PROPERTY STRINGS "none" "replace" "hexdump" "passgen")
+set_property(CACHE BUILD_TARGET PROPERTY STRINGS "none" "replace" "hexdump" "passgen" "readblock")
 
 if(BUILD_TESTING)
     include(CTest)
@@ -25,5 +25,7 @@ elseif(BUILD_TARGET STREQUAL "hexdump")
     add_subdirectory(hexdump)
 elseif(BUILD_TARGET STREQUAL "passgen")
     add_subdirectory(passgen)
+elseif(BUILD_TARGET STREQUAL "readblock")
+    add_subdirectory(readblock)
 endif()
 

@@ -18,7 +18,7 @@ static const OptionInfo help = {HELP_NAME, NONE, "Показать справк�
 static const OptionInfo defaultOptions[] = {addSep, setSep, help};
 static constexpr size_t defOptionsCount = sizeof(defaultOptions) / sizeof(OptionInfo);
 
-Option * createOption(OptionInfo *optInfo, const OptValue val, char **error) {
+Option* createOption(const OptionInfo *optInfo, const OptValue val, char **error) {
     if (!optInfo)
         return putError("Неверные аргументы: createOption", error);
 
@@ -56,19 +56,19 @@ ArgParser *createArgParser(OptionInfo *options, const size_t optionsCount, const
     return argParser;
 }
 
-Option* parseArg(const OptionInfo *options, const size_t optionsCount, char *separators, size_t separatorsCount, char *currentToken, char *nextToken, char **error) {
+Option* parseArg(const OptionInfo *options, const size_t optionsCount, const char *separators, size_t separatorsCount, char *currentToken, char *nextToken, char **error) {
     for (size_t k = 0; k < optionsCount; k++) {
-        OptionInfo optInfo = options[k];
-        if (!startsWith(currentToken, optInfo.name)) continue;
+        const OptionInfo *optInfo = &options[k];
+        if (!startsWith(currentToken, optInfo->name)) continue;
 
         const size_t currentTokenLen = strlen(currentToken);
-        const size_t argNameLen = strlen(optInfo.name);
-        if (optInfo.type == NONE) {
+        const size_t argNameLen = strlen(optInfo->name);
+        if (optInfo->type == NONE) {
             if (currentTokenLen != argNameLen)
                 return nullptr;
 
-            Option *opt = createOption(&optInfo, (OptValue){0}, error);
-            if (error) return nullptr;
+            Option *opt = createOption(optInfo, (OptValue){0}, error);
+            if (*error) return nullptr;
 
             return opt;
         }
@@ -85,7 +85,7 @@ Option* parseArg(const OptionInfo *options, const size_t optionsCount, char *sep
         }
 
         OptValue val = (OptValue){.strVal = rawVal};
-        if (optInfo.type == INT) {
+        if (optInfo->type == INT) {
             if (!strIsDigit(rawVal))
                 return putErrorf("Аргумент %s должен иметь целочисленный аргумент(сейчас %s)\n", error, currentToken, rawVal);
 
@@ -93,8 +93,8 @@ Option* parseArg(const OptionInfo *options, const size_t optionsCount, char *sep
             if (errno == ERANGE) return putErrorf("Целочисленный аргумент %s переполнен(%s)\n", error, currentToken, rawVal);
         }
 
-        Option *opt = createOption(&optInfo, val, error);
-        if (error) return nullptr;
+        Option *opt = createOption(optInfo, val, error);
+        if (*error) return nullptr;
 
         return opt;
     }
@@ -102,8 +102,16 @@ Option* parseArg(const OptionInfo *options, const size_t optionsCount, char *sep
     return nullptr;
 }
 
-void parseArgs(ArgParser *parser, const int argc, char *argv[]) {
-    if (!parser || !parser->options || !parser->optionsCount || !argc || !argv) return;
+bool parseArgs(ArgParser *parser, const int argc, char *argv[]) {
+    if (!parser) return false;
+
+    if (!parser->options || !parser->optionsCount) {
+        perror("Не задано ни одного аргумента");
+        return false;
+    }
+
+    if (!argc || !argv)
+        goto end;
 
     char *error = NULL;
 
@@ -122,7 +130,7 @@ void parseArgs(ArgParser *parser, const int argc, char *argv[]) {
                 char *newSeps = realloc(parser->separators, parser->separatorsCount + 1);
                 if (!newSeps) {
                     perror("Ошибка выделения памяти: parseArgs");
-                    return;
+                    return false;
                 }
 
                 newSeps[parser->separatorsCount++] = standardOption->val.strVal[0];
@@ -131,7 +139,7 @@ void parseArgs(ArgParser *parser, const int argc, char *argv[]) {
                 char *newSeps = realloc(parser->separators, 1);
                 if (!newSeps) {
                     perror("Ошибка выделения памяти: parseArgs");
-                    return;
+                    return false;
                 }
 
                 newSeps[0] = standardOption->val.strVal[0];
@@ -146,10 +154,10 @@ void parseArgs(ArgParser *parser, const int argc, char *argv[]) {
                 parser->result = nullptr;
                 parser->resultSize = 0;
                 
-                return;
+                return true;
             } else {
-                fprintf(stderr, "Неизвестноее имя стандартной опции %s", name);
-                return;
+                fprintf(stderr, "Неизвестное имя стандартной опции %s", name);
+                return false;
             }
         }
 
@@ -163,14 +171,17 @@ void parseArgs(ArgParser *parser, const int argc, char *argv[]) {
 
     }
 
+    end:
     if (!parser->validator(parser->result, parser->resultSize, &error))
         goto err;
 
-    return;
+    return true;
 
     err: {
         fprintf(stderr, "%s\n", error);
         free(error);
+
+        return false;
     }
 }
 

@@ -19,7 +19,7 @@ typedef struct OptionInfo {
 } OptionInfo;
 
 typedef struct {
-    OptionInfo *info;
+    const OptionInfo *info;
     OptValue val;
 } Option;
 
@@ -35,11 +35,11 @@ typedef struct ArgParser {
     size_t separatorsCount;
 } ArgParser;
 
-Option *createOption(OptionInfo *optInfo, OptValue val, char **error);
+Option *createOption(const OptionInfo *optInfo, OptValue val, char **error);
 
 ArgParser *createArgParser(OptionInfo *options, size_t optionsCount, ArgsCompatibilityValidator validator);
 
-void parseArgs(ArgParser *parser, int argc, char *argv[]);
+bool parseArgs(ArgParser *parser, int argc, char *argv[]);
 
 Option *nextOption(ArgParser *parser);
 

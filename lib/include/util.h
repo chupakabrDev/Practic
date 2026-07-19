@@ -28,3 +28,5 @@ void* putErrorf(const char *str, char **error, ...);
 bool strIsDigit(const char *str);
 
 int strtolSafe(const char *nptr, char **endptr, int base);
+
+void swap(char* a, char* b, const size_t size);

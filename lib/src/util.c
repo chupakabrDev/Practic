@@ -142,3 +142,11 @@ int strtolSafe(const char *nptr, char **endptr, int base) {
     }
     return (int)val;
 }
+
+void swap(char* a, char* b, const size_t size) {
+    for (size_t i = 0; i < size; i++) {
+        const char t = a[i];
+        a[i] = b[i];
+        b[i] = t;
+    }
+}

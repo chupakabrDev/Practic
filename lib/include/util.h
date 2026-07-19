@@ -19,6 +19,12 @@ size_t strToSizeT(const char *str, char **endptr);
 
 bool startsWith(const char *str, const char *prefix);
 
+bool startsWithAny(const char *str, const char *arr, size_t len);
+
 void* putError(const char *str, char **error);
 
+void* putErrorf(const char *str, char **error, ...);
+
 bool strIsDigit(const char *str);
+
+int strtolSafe(const char *nptr, char **endptr, int base);

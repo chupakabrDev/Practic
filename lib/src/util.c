@@ -10,9 +10,11 @@
 #include <ctype.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <limits.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 
 unsigned char hexToNibble(const char c) {
@@ -64,10 +66,21 @@ size_t strToSizeT(const char *str, char **endptr) {
     }
     return val;
 }
+
 bool startsWith(const char *str, const char *prefix) {
     if (!str || !prefix) return false;
 
     return strncmp(str, prefix, strlen(prefix)) == 0;
+}
+
+bool startsWithAny(const char *str, const char *arr, const size_t len) {
+    if (!str || !arr) return false;
+
+    for (int i = 0; i < len; i++) {
+        if (str[0] == arr[i]) return true;
+    }
+
+    return false;
 }
 
 void* putError(const char *str, char **error) {
@@ -81,6 +94,33 @@ void* putError(const char *str, char **error) {
     return nullptr;
 }
 
+void* putErrorf(const char *str, char **error, ...) {
+    va_list args;
+    va_start(args, error);
+
+    va_list argsCopy;
+    va_copy(argsCopy, args);
+    int len = vsnprintf(nullptr, 0, str, argsCopy);
+    va_end(argsCopy);
+
+    if (len < 0) {
+        perror("putErrorf: vsnprintf failed");
+        exit(1);
+    }
+
+    char *copy = malloc(len + 1);
+    if (!copy) {
+        perror("Ошибка выделения памяти: putErrorf");
+        exit(1);
+    }
+
+    vsnprintf(copy, len + 1, str, args);
+    va_end(args);
+
+    *error = copy;
+    return NULL;
+}
+
 bool strIsDigit(const char *str) {
     if (str == nullptr) return false;
 
@@ -90,4 +130,15 @@ bool strIsDigit(const char *str) {
     }
 
     return true;
+}
+
+int strtolSafe(const char *nptr, char **endptr, int base) {
+    errno = 0;
+    long val = strtol(nptr, endptr, base);
+
+    if (errno == ERANGE || val < INT_MIN || val > INT_MAX) {
+        errno = ERANGE;
+        return (val < 0) ? INT_MIN : INT_MAX;
+    }
+    return (int)val;
 }

@@ -23,7 +23,7 @@ typedef struct {
     OptValue val;
 } Option;
 
-typedef bool (*ArgsCompatibilityValidator)(Option *options, size_t optionsCount, char **error);
+typedef bool (*ArgsCompatibilityValidator)(const Option *options, size_t optionsCount, char **error);
 
 typedef struct ArgParser {
     OptionInfo *options;

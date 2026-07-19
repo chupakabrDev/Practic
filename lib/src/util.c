@@ -7,6 +7,7 @@
 
 #include "util.h"
 
+#include <ctype.h>
 #include <errno.h>
 #include <inttypes.h>
 #include <stdint.h>
@@ -69,7 +70,7 @@ bool startsWith(const char *str, const char *prefix) {
     return strncmp(str, prefix, strlen(prefix)) == 0;
 }
 
-void putError(const char *str, char **error) {
+void* putError(const char *str, char **error) {
     char *copy = strdup(str);
     if (!copy) {
         perror("Ошибка выделения памяти: putError");
@@ -77,4 +78,16 @@ void putError(const char *str, char **error) {
     }
 
     *error = copy;
+    return nullptr;
+}
+
+bool strIsDigit(const char *str) {
+    if (str == nullptr) return false;
+
+    for (size_t i = 0; str[i] != '\0'; i++) {
+        if (!isdigit((unsigned char)str[i]))
+            return false;
+    }
+
+    return true;
 }

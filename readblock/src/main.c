@@ -39,7 +39,7 @@ int cmpLexReverseCase(const void *a, const void *b) {
 
 int main(int argc, char *argv[]) {
     if (argc != 4) {
-        fprintf(stderr, "Usage: %s <input_file> <output_file> <comparator_num (1-4)>\n", argv[0]);
+        fprintf(stderr, "Использование: %s <входной_файл> <выходной_файл> <номер_компаратора (1-4)>\n", argv[0]);
         return 1;
     }
 
@@ -47,14 +47,14 @@ int main(int argc, char *argv[]) {
     const char *outFile = argv[2];
     int cmpNum = strtolSafe(argv[3], nullptr, 10);
     if (cmpNum < 1 || cmpNum > 4) {
-        fprintf(stderr, "Comparator number must be 1, 2, 3 or 4\n");
+        perror("Номер компаратора должен быть 1, 2, 3 или 4");
         return 1;
     }
 
     /* Чтение файла */
     LargeBlock **blocks = readFile(inFile);
     if (!blocks) {
-        fprintf(stderr, "Failed to read file\n");
+        perror("Ошибка чтения файла");
         return 1;
     }
 

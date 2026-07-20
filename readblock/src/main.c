@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "util.h"
+#include "quick_sort.h"
 
 /* 1. Лексикографический с учётом регистра (прямой порядок) */
 int cmpLexCase(const void *a, const void *b) {
@@ -71,7 +72,7 @@ int main(int argc, char *argv[]) {
         char *str = (char *)blocks[i];
         size_t len = strlen(str);
         if (len > 1) {
-            qsort(str, len, sizeof(char), cmpFunc);
+            quickSort(str, len, sizeof(char), cmpFunc);
         }
     }
 

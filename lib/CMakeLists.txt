@@ -6,6 +6,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 set(SOURCES
         src/arg_parser.c
+        src/quick_sort.c
         src/finder.c
         src/reader.c
         src/writer.c

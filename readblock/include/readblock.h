@@ -11,3 +11,5 @@ typedef SmallBlock LargeBlock[N2][M2];
 #define LARGE_BLOCK_SIZE sizeof(LargeBlock)
 
 LargeBlock** readFile(const char *filename);
+
+void writeBlocks(const char *file, LargeBlock **strings);

@@ -163,3 +163,20 @@ LargeBlock** readFile(const char *filename) {
     fclose(file);
     return result;
 }
+
+void writeBlocks(const char *file, LargeBlock **strings) {
+    if (!file || !strings) return;
+
+    FILE *out = fopen(file, "w");
+    if (!out) {
+        perror("Ошибка открытия файла: writeBlocks");
+        return;
+    }
+
+    for (size_t i = 0; strings[i] != NULL; i++) {
+        const char *str = (const char *)strings[i];
+        size_t len = strlen(str);
+        fwrite(str, 1, len, out);
+        fputc('\n', out);
+    }
+}
